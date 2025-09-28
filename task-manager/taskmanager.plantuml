@@ -1,0 +1,97 @@
+@startuml
+title TaskMaster — Entities (preconditions + UI-friendly aggregates)
+
+' ===================== ENTITIES =====================
+class TaskBoard <<entity>> {
+  + TaskBoard()
+
+  ' --- State (owned by board for app lifetime) ---
+  - engineers : List<Engineer>
+  - tasks     : List<Task>
+
+  ' --- Commands (rules enforced here) ---
+  + addEngineer(name:String) : Engineer
+  + updateEngineer(id:String, name:String) : boolean
+  + removeEngineer(id:String) : boolean       ' only if engineer has 0 assigned tasks
+
+  + addTask(title:String, estMin:int, desc:String="") : Task
+  + updateTask(id:String, title:String, estMin:int, desc:String="") : boolean
+  + removeUnassignedTask(id:String) : boolean ' only if task is UNASSIGNED and not completed
+
+  + assignTask(taskId:String, engineerId:String) : boolean
+  + completeTask(taskId:String, actualMin:int) : boolean   ' pre: task ASSIGNED and not completed
+
+  ' --- Queries / Aggregates (read-only views or copies) ---
+  + engineersList() : List<Engineer>
+  + unassignedTasks() : List<Task>
+  + tasksByEngineer(engineerId:String) : List<Task>
+  + completedTasks() : List<Task>
+
+  ' Required totals per spec
+  + totalUnassignedMinutes() : int
+  + totalAssignedMinutesByEngineer(engineerId:String) : int
+  + totalCompletedMinutes() : int
+
+  ' UI-friendly convenience (ergonomic, not required)
+  + totalAssignedMinutesByEngineer() : Map<Engineer,int>
+}
+
+class Engineer <<entity>> {
+  + Engineer(id:String, name:String)
+  + id   : String
+  + name : String
+  + assignedTasks() : List<Task>   ' derived: all Tasks that reference this Engineer
+}
+
+class Task <<entity>> {
+  + Task(id:String, title:String, estimatedMinutes:int, description:String="")
+  + id               : String
+  + title            : String
+  + description      : String
+  + estimatedMinutes : int         ' > 0
+  + actualMinutes    : Integer     ' null until completed; >= 0 when set; immutable after set
+  + engineer         : Engineer    ' nullable (0..1)
+}
+
+' ===================== RELATIONSHIPS & NAVIGATION =====================
+' Lifecycle ownership (composition: board is the owner)
+TaskBoard "1" *-- "0..*" Engineer : owns
+TaskBoard "1" *-- "0..*" Task     : owns
+
+' Task knows its Engineer (0..1); Engineer can have 0..* Tasks
+Task  "0..1" --> "0..*" Engineer : assignedTo
+
+' ===================== CONSTRAINTS / NOTES =====================
+note top of TaskBoard
+  Board & IDs
+  • Board may be empty (0 engineers, 0 tasks); no upper bounds.
+  • Engineer.id and Task.id are unique within the board.
+
+  Assignment rule
+  • Once assigned, a task cannot be unassigned or reassigned.
+    – assignTask(...) fails if the task is already assigned.
+
+  Removal rules
+  • removeEngineer(id): only succeeds if that engineer has 0 assigned tasks.
+  • removeUnassignedTask(id): only for UNASSIGNED and NOT COMPLETED tasks.
+
+  Query semantics
+  • All list-returning operations return read-only views or copies.
+end note
+
+note right of Task
+  Minutes domain & completion
+  • estimatedMinutes > 0
+  • actualMinutes is null or ≥ 0
+  • Completing a task sets actualMinutes and moves it to the completed list;
+    once set, actualMinutes does not change.
+
+  Precondition on completion
+  • completeTask(taskId, actualMin): task must be ASSIGNED and not already completed.
+end note
+
+note right of Engineer
+  Awareness
+  • assignedTasks() returns all tasks whose engineer == this engineer.
+end note
+@enduml

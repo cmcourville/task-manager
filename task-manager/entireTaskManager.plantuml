@@ -1,0 +1,197 @@
+@startuml
+title TaskMaster — Full System (Entities + Boundary + Controllers)
+
+' =====================================================
+' =============== ENTITIES (Domain Model) =============
+' =====================================================
+class TaskBoard <<entity>> {
+  + TaskBoard()
+
+  ' --- State (owned for app lifetime) ---
+  - engineers : List<Engineer>
+  - tasks     : List<Task>
+
+  ' --- Commands (rules enforced here) ---
+  + addEngineer(name:String) : Engineer
+  + updateEngineer(id:String, name:String) : boolean
+  + removeEngineer(id:String) : boolean       ' only if engineer has 0 assigned tasks
+
+  + addTask(title:String, estMin:int, desc:String="") : Task
+  + updateTask(id:String, title:String, estMin:int, desc:String="") : boolean
+  + removeUnassignedTask(id:String) : boolean ' only if UNASSIGNED and NOT COMPLETED
+
+  + assignTask(taskId:String, engineerId:String) : boolean  ' fails if already assigned
+  + completeTask(taskId:String, actualMin:int) : boolean    ' pre: ASSIGNED and not completed
+
+  ' --- Queries (return read-only views or copies) ---
+  + engineersList() : List<Engineer>
+  + unassignedTasks() : List<Task>
+  + tasksByEngineer(engineerId:String) : List<Task>
+  + completedTasks() : List<Task>
+
+  ' --- Aggregates required by spec ---
+  + totalUnassignedMinutes() : int
+  + totalAssignedMinutesByEngineer(engineerId:String) : int
+  + totalCompletedMinutes() : int
+  ' UI-friendly convenience (ergonomic, optional)
+  + totalAssignedMinutesByEngineer() : Map<Engineer,int>
+}
+
+class Engineer <<entity>> {
+  + Engineer(id:String, name:String)
+  + id   : String
+  + name : String
+  + assignedTasks() : List<Task>   ' derived: all Tasks where Task.engineer == this
+}
+
+class Task <<entity>> {
+  + Task(id:String, title:String, estimatedMinutes:int, description:String="")
+  + id               : String
+  + title            : String
+  + description      : String
+  + estimatedMinutes : int         ' > 0
+  + actualMinutes    : Integer     ' null until completed; >= 0 when set; immutable after set
+  + engineer         : Engineer    ' nullable (0..1)
+}
+
+' ---- Relationships / Lifecycle ----
+TaskBoard "1" *-- "0..*" Engineer : owns
+TaskBoard "1" *-- "0..*" Task     : owns
+Task  "0..1" --> "0..*" Engineer  : assignedTo
+
+' ---- Entity Notes (constraints & policies) ----
+note top of TaskBoard
+  Board & IDs
+  • May be empty (0 engineers, 0 tasks); no upper bounds.
+  • Engineer.id and Task.id are unique within the board.
+
+  Assignment rule
+  • Once assigned, a task cannot be unassigned or reassigned.
+    – assignTask(...) fails if the task is already assigned.
+
+  Removal rules
+  • removeEngineer(id): succeeds only if that engineer has 0 assigned tasks.
+  • removeUnassignedTask(id): only when task is UNASSIGNED and NOT COMPLETED.
+
+  Query semantics
+  • All list-returning operations return read-only views or copies.
+  Constructor guards
+  • addEngineer(name): non-empty after trim.
+  • addTask(title, estMin): title non-blank; estMin > 0.
+end note
+
+note right of Task
+  Minutes & completion
+  • estimatedMinutes > 0
+  • actualMinutes is null or ≥ 0
+  • completeTask sets actualMinutes and moves task to completed;
+    once set, actualMinutes does not change (immutable).
+end note
+
+note right of Engineer
+  Awareness
+  • assignedTasks() lists all tasks that reference this engineer.
+end note
+
+
+' =====================================================
+' ================= BOUNDARY (UI Shell) ===============
+' =====================================================
+class TaskMasterApp <<boundary>> {
+  + TaskMasterApp()
+
+  ' --- Widgets/Views (no business logic) ---
+  navEngineers : Link
+  navTasks     : Link
+  btnAssignTask   : Button
+  btnCompleteTask : Button
+
+  kpiUnassignedTotal      : Label
+  kpiAssignedByEngineer   : Label
+  kpiCompletedActualTotal : Label
+
+  listEngineers           : ListView<Engineer>
+  listUnassignedTasks     : ListView<Task>
+  listAssignedByEngineer  : TreeView<Engineer,Task>
+  listCompletedTasks      : ListView<Task>
+
+  ' --- UI helpers ---
+  + refresh(board:TaskBoard) : void
+  + showError(msg:String)    : void
+}
+
+' UI reads entity state to render
+TaskMasterApp ..> TaskBoard : reads state
+
+
+' =====================================================
+' ================ CONTROLLERS (EBC) ==================
+' =====================================================
+package "Controllers (stateless; realize UCs)" {
+  class AddEngineerController <<controller>> {
+    + AddEngineerController(board:TaskBoard, app:TaskMasterApp)
+    + execute(name:String) : void
+    ' logic: validate name; board.addEngineer; app.refresh
+  }
+  class UpdateEngineerController <<controller>> {
+    + UpdateEngineerController(board:TaskBoard, app:TaskMasterApp)
+    + execute(id:String, name:String) : void
+    ' logic: validate exists & name; board.updateEngineer; app.refresh
+  }
+  class RemoveEngineerController <<controller>> {
+    + RemoveEngineerController(board:TaskBoard, app:TaskMasterApp)
+    + execute(id:String) : void
+    ' logic: enforce pre: engineer has 0 assigned tasks; remove; refresh
+  }
+
+  class AddTaskController <<controller>> {
+    + AddTaskController(board:TaskBoard, app:TaskMasterApp)
+    + execute(title:String, estMin:int, desc:String="") : void
+    ' logic: validate title & estMin>0; board.addTask; refresh
+  }
+  class UpdateTaskController <<controller>> {
+    + UpdateTaskController(board:TaskBoard, app:TaskMasterApp)
+    + execute(id:String, title:String, estMin:int, desc:String="") : void
+    ' logic: validate exists & estMin>0; board.updateTask; refresh
+  }
+  class RemoveTaskController <<controller>> {
+    + RemoveTaskController(board:TaskBoard, app:TaskMasterApp)
+    + execute(id:String) : void
+    ' logic: allow only if UNASSIGNED & not completed; board.removeUnassignedTask; refresh
+  }
+
+  class AssignTaskController <<controller>> {
+    + AssignTaskController(board:TaskBoard, app:TaskMasterApp)
+    + execute(taskId:String, engineerId:String) : void
+    ' pre: task UNASSIGNED; engineer exists
+    ' logic: board.assignTask; fail if already assigned (immutable policy); refresh
+  }
+  class CompleteTaskController <<controller>> {
+    + CompleteTaskController(board:TaskBoard, app:TaskMasterApp)
+    + execute(taskId:String, actualMin:int) : void
+    ' pre: task ASSIGNED and not completed; actualMin >= 0
+    ' logic: board.completeTask; refresh
+  }
+}
+
+' Controller dependencies (stateless; know entities + boundary)
+AddEngineerController --> TaskBoard
+AddEngineerController --> TaskMasterApp
+UpdateEngineerController --> TaskBoard
+UpdateEngineerController --> TaskMasterApp
+RemoveEngineerController --> TaskBoard
+RemoveEngineerController --> TaskMasterApp
+
+AddTaskController --> TaskBoard
+AddTaskController --> TaskMasterApp
+UpdateTaskController --> TaskBoard
+UpdateTaskController --> TaskMasterApp
+RemoveTaskController --> TaskBoard
+RemoveTaskController --> TaskMasterApp
+
+AssignTaskController --> TaskBoard
+AssignTaskController --> TaskMasterApp
+CompleteTaskController --> TaskBoard
+CompleteTaskController --> TaskMasterApp
+
+@enduml
