@@ -1,0 +1,105 @@
+{
+  "engineers": [
+    {
+      "id": "eng1",
+      "name": "Alice Johnson"
+    },
+    {
+      "id": "eng2",
+      "name": "Bob Smith"
+    },
+    {
+      "id": "eng3",
+      "name": "Carol Davis"
+    },
+    {
+      "id": "eng4",
+      "name": "David Wilson"
+    },
+    {
+      "id": "eng1759264598614",
+      "name": "Corrin Courville 3"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task1",
+      "title": "Implement User Authentication",
+      "description": "Create secure user login and registration system",
+      "estimatedTime": 120,
+      "status": "assigned",
+      "assigneeId": "eng1",
+      "assigneeName": "Alice Johnson"
+    },
+    {
+      "id": "task2",
+      "title": "Database Schema Design",
+      "description": "Design and implement database structure",
+      "estimatedTime": 90,
+      "status": "assigned",
+      "assigneeId": "eng1",
+      "assigneeName": "Alice Johnson"
+    },
+    {
+      "id": "task3",
+      "title": "API Documentation",
+      "description": "Create comprehensive API documentation",
+      "estimatedTime": 60,
+      "actualTime": 60,
+      "status": "completed",
+      "assigneeId": "eng1",
+      "assigneeName": "Alice Johnson"
+    },
+    {
+      "id": "task4",
+      "title": "Frontend UI Components",
+      "description": "Build reusable React components",
+      "estimatedTime": 150,
+      "status": "assigned",
+      "assigneeId": "eng2",
+      "assigneeName": "Bob Smith"
+    },
+    {
+      "id": "task5",
+      "title": "Testing Suite Setup",
+      "description": "Configure automated testing framework",
+      "estimatedTime": 75,
+      "actualTime": 75,
+      "status": "completed",
+      "assigneeId": "eng2",
+      "assigneeName": "Bob Smith"
+    },
+    {
+      "id": "task6",
+      "title": "Performance Optimization",
+      "description": "Optimize application performance and speed",
+      "estimatedTime": 200,
+      "status": "assigned",
+      "assigneeId": "eng3",
+      "assigneeName": "Carol Davis"
+    },
+    {
+      "id": "task7",
+      "title": "Code Review Process",
+      "description": "Establish code review guidelines and process",
+      "estimatedTime": 45,
+      "status": "assigned",
+      "assigneeId": "eng1759264598614",
+      "assigneeName": "Corrin Courville 3"
+    },
+    {
+      "id": "task8",
+      "title": "Deployment Pipeline",
+      "description": "Set up CI/CD deployment pipeline",
+      "estimatedTime": 180,
+      "status": "unassigned"
+    },
+    {
+      "id": "task9",
+      "title": "Test Coverage Analysis",
+      "description": "Analyze and improve test coverage",
+      "estimatedTime": 90,
+      "status": "unassigned"
+    }
+  ]
+}

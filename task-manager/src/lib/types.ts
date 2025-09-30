@@ -1,8 +1,6 @@
 export interface Engineer {
   id: string
   name: string
-  email: string
-  department: string
 }
 
 export interface Task {
