@@ -10,7 +10,7 @@ const MockEngineersPage = () => (
     <ul>
       {sampleEngineers.map(engineer => (
         <li key={engineer.id} data-testid={`engineer-${engineer.id}`}>
-          {engineer.name} - {engineer.department}
+          {engineer.name}
         </li>
       ))}
     </ul>
@@ -40,7 +40,6 @@ describe('Component Integration Tests', () => {
       sampleEngineers.forEach(engineer => {
         expect(screen.getByTestId(`engineer-${engineer.id}`)).toBeInTheDocument()
         expect(screen.getByText(engineer.name, { exact: false })).toBeInTheDocument()
-        expect(screen.getByText(engineer.department, { exact: false })).toBeInTheDocument()
       })
     })
 

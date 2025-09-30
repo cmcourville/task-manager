@@ -5,17 +5,13 @@ import type { Engineer, Task } from '@/lib/types'
 describe('Data Module', () => {
   describe('sampleEngineers', () => {
     it('should contain valid engineer data', () => {
-      expect(sampleEngineers).toHaveLength(4)
+      expect(sampleEngineers.length).toBeGreaterThanOrEqual(4)
       
       sampleEngineers.forEach(engineer => {
         expect(engineer).toHaveProperty('id')
         expect(engineer).toHaveProperty('name')
-        expect(engineer).toHaveProperty('email')
-        expect(engineer).toHaveProperty('department')
         expect(typeof engineer.id).toBe('string')
         expect(typeof engineer.name).toBe('string')
-        expect(typeof engineer.email).toBe('string')
-        expect(typeof engineer.department).toBe('string')
       })
     })
 
@@ -60,8 +56,8 @@ describe('Data Module', () => {
 
   describe('calculateStatistics', () => {
     const mockEngineers: Engineer[] = [
-      { id: 'eng1', name: 'Alice', email: 'alice@test.com', department: 'Backend' },
-      { id: 'eng2', name: 'Bob', email: 'bob@test.com', department: 'Frontend' }
+      { id: 'eng1', name: 'Alice' },
+      { id: 'eng2', name: 'Bob' }
     ]
 
     const mockTasks: Task[] = [

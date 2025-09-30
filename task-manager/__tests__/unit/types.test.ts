@@ -6,15 +6,11 @@ describe('Type Definitions', () => {
     it('should have required properties', () => {
       const engineer: Engineer = {
         id: 'eng1',
-        name: 'Alice Johnson',
-        email: 'alice.johnson@company.com',
-        department: 'Backend Development'
+        name: 'Alice Johnson'
       }
 
       expect(engineer.id).toBe('eng1')
       expect(engineer.name).toBe('Alice Johnson')
-      expect(engineer.email).toBe('alice.johnson@company.com')
-      expect(engineer.department).toBe('Backend Development')
     })
   })
 
