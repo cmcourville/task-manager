@@ -29,7 +29,8 @@
       "estimatedTime": 120,
       "status": "assigned",
       "assigneeId": "eng1",
-      "assigneeName": "Alice Johnson"
+      "assigneeName": "Alice Johnson",
+      "actualTime": -1
     },
     {
       "id": "task2",
@@ -92,14 +93,18 @@
       "title": "Deployment Pipeline",
       "description": "Set up CI/CD deployment pipeline",
       "estimatedTime": 180,
-      "status": "unassigned"
+      "status": "assigned",
+      "assigneeId": "eng1",
+      "assigneeName": "Alice Johnson"
     },
     {
       "id": "task9",
       "title": "Test Coverage Analysis",
       "description": "Analyze and improve test coverage",
       "estimatedTime": 90,
-      "status": "unassigned"
+      "status": "assigned",
+      "assigneeId": "eng1759264598614",
+      "assigneeName": "Corrin Courville 3"
     }
   ]
 }

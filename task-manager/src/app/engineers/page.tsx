@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { sampleEngineers, sampleTasks, calculateStatistics } from '@/lib/data'
 import { dataApi } from '@/lib/api'
@@ -554,12 +554,29 @@ export default function EngineersPage() {
                       ))}
                     </select>
                   </div>
+                  <div className="form-group">
+                    <label>Actual Time (minutes):</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={taskEdit?.actualTime ?? ''}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        const numValue = value === '' ? undefined : Math.max(0, Number(value))
+                        setTaskEdit(prev => prev ? { ...prev, actualTime: numValue } : prev)
+                      }}
+                      placeholder="Enter actual time spent"
+                    />
+                    <small className="text-muted">Enter a positive number for actual time spent</small>
+                  </div>
                 </form>
               ) : (
                 <div>
                   <p><strong>Title:</strong> {selectedTask.title}</p>
                   <p><strong>Description:</strong> {selectedTask.description}</p>
                   <p><strong>Estimated Time:</strong> {selectedTask.estimatedTime} minutes</p>
+                  <p><strong>Actual Time:</strong> {selectedTask.actualTime ? `${selectedTask.actualTime} minutes` : 'Not recorded'}</p>
                   <p><strong>Status:</strong> {selectedTask.status}</p>
                   <p><strong>Assigned to:</strong> {selectedTask.assigneeName || 'Not assigned'}</p>
                 </div>

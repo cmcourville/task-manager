@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import Link from 'next/link'
 import { sampleEngineers, sampleTasks, calculateStatistics } from '@/lib/data'
 
